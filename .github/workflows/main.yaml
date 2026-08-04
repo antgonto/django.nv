@@ -23,52 +23,52 @@ jobs:
           pip install -r requirements.txt
           python manage.py check
 
-    test:
-      runs-on: ubuntu-22.04
-      needs: build
-      steps:
-        - uses: actions/checkout@v2
+  test:
+    runs-on: ubuntu-22.04
+    needs: build
+    steps:
+      - uses: actions/checkout@v2
 
-        - name: Setup python
-          uses: actions/setup-python@v2
-          with:
-            python-version: '3.7'
+      - name: Setup python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.7'
 
-        - run: |
-            pip3 install --upgrade virtualenv
-            virtualenv env
-            source env/bin/activate
-            pip install -r requirements.txt
-            python manage.py test taskManager
+      - run: |
+          pip3 install --upgrade virtualenv
+          virtualenv env
+          source env/bin/activate
+          pip install -r requirements.txt
+          python manage.py test taskManager
 
-    oast:
-      runs-on: ubuntu-22.04
-      needs: test
-      steps:
-        - uses: actions/checkout@v2
-        - |
-          cat > .safety-policy.yml <<EOF
-          security:
-            ignore-vulnerabilities: {}
-          EOF
-        - run: docker run --rm -v $(pwd):/src hysnsec/safety check -r requirements.txt --json > oast-results.json
+  oast:
+    runs-on: ubuntu-22.04
+    needs: test
+    steps:
+      - uses: actions/checkout@v2
+      - |
+        cat > .safety-policy.yml <<EOF
+        security:
+          ignore-vulnerabilities: {}
+        EOF
+      - run: docker run --rm -v $(pwd):/src hysnsec/safety check -r requirements.txt --json > oast-results.json
 
-        - uses: actions/upload-artifact@v4
-          with:
-            name: Safety
-            path: oast-results.json
-          if: always()                        # what is this for?
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Safety
+          path: oast-results.json
+        if: always()                        # what is this for?
 
-    integration:
-      runs-on: ubuntu-22.04
-      needs: test
-      steps:
-        - run: echo "This is an integration step"
-        - run: exit 1
-          continue-on-error: true
+  integration:
+    runs-on: ubuntu-22.04
+    needs: test
+    steps:
+      - run: echo "This is an integration step"
+      - run: exit 1
+        continue-on-error: true
 
-    prod:
-      runs-on: ubuntu-22.04
-      needs: integration
-      steps:
-        - run: echo "This is a deploy step."
+  prod:
+    runs-on: ubuntu-22.04
+    needs: integration
+    steps:
+      - run: echo "This is a deploy step."
