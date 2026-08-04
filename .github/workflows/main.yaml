@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [200~name: Django                                  # workflow name
 
 on:
@@ -74,3 +75,6 @@ jobs:
     needs: integration
     steps:
       - run: echo "This is a deploy step."~
+=======
+
+>>>>>>> f17d4e4a75ea1014c05c247574c47ac996062fa5
