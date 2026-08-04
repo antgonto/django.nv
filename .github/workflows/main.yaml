@@ -1,17 +1,17 @@
-name: Django                                  # workflow name
+name: Django                                 # workflow name
 
 on:
   push:
-    branches:                                 # similar to "only" in GitLab
+    branches:                                # similar to "only" in GitLab
       - main
 
 jobs:
   build:
     runs-on: ubuntu-22.04   # similar to "image" in GitLab
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: '3.7'
       - run: |
@@ -20,14 +20,14 @@ jobs:
           source env/bin/activate
           pip install -r requirements.txt
           python manage.py check
+
   test:
     runs-on: ubuntu-22.04
     needs: build
     steps:
-      - uses: actions/checkout@v2
-
+      - uses: actions/checkout@v4
       - name: Setup python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v5
         with:
           python-version: '3.7'
       - run: |
@@ -41,21 +41,20 @@ jobs:
     runs-on: ubuntu-22.04
     needs: test
     steps:
-      - uses: actions/checkout@v2
-
-      - |
-        cat > .safety-policy.yml <<EOF
-        security:
-          ignore-vulnerabilities: {}
-        EOF
+      - uses: actions/checkout@v4
+      - run: |
+          cat > .safety-policy.yml <<EOF
+          security:
+            ignore-vulnerabilities: {}
+          EOF
       - run: docker run --rm -v $(pwd):/src hysnsec/safety check -r requirements.txt --json > oast-results.json
         continue-on-error: true             # allow the build to fail, similar to "allow_failure: true" in GitLab
-
       - uses: actions/upload-artifact@v4
         with:
           name: Safety
           path: oast-results.json
-        if: always()                        # what is this for?
+        if: always()                        # Ensures the artifact uploads even if the safety check fails
+
   integration:
     runs-on: ubuntu-22.04
     needs: oast
